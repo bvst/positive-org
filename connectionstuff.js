@@ -1,22 +1,6 @@
 var GLOBAL_OBJECT = {};
 
 $(function () {
-
-    // function readTextFile() {
-    //     var file = "file:///C:/Projects/positive-org/token.txt";
-    //     var rawFile = new XMLHttpRequest();
-    //     rawFile.open("GET", file, false);
-    //     rawFile.onreadystatechange = function () {
-    //         if (rawFile.readyState === 4) {
-    //             if (rawFile.status === 200 || rawFile.status == 0) {
-    //                 var allText = rawFile.responseText;
-    //                 alert(allText);
-    //             }
-    //         }
-    //     }
-    //     rawFile.send(null);
-    // }
-
     var CLIENT_ID = "2793421325.149799815397";
     var CLIENT_CODE = "2793421325.150395679590.a590187d8d";
     var HISTORY_ENDPOINT = "https://cibernordic.slack.com/api/channels.history";
@@ -32,7 +16,7 @@ $(function () {
     var SAD_PERCENTAGE = 0;
     var TOTAL_RESPONSES = 0;
 
-    var token = "xoxp-2793421325-2793421327-149067564641-334047ecf2d5a34733eee63e7d472e68"; // extractToken(document.location.hash);
+    var token = TOKEN;
     var itemsProcessed = 0;
     $.get(CHANNEL_LIST_ENDPOINT, {
         token: token,
@@ -122,46 +106,6 @@ $(function () {
                             maintainAspectRatio: false
                         }
                     });
-                    // var myChart = new Chart(ctx, {
-                    //     type: 'bar',
-                    //     data: {
-                    //         labels: labels,
-                    //         datasets: [{
-                    //             label: 'happyness',
-                    //             backgroundColor: [
-                    //                 'rgba(255, 99, 132, 0.2)',
-                    //             ],
-                    //             borderColor: [
-                    //                 'rgba(255,99,132,1)'
-                    //             ],
-                    //             borderWidth: 1,
-                    //             data: [1,2,3,4,5,6,7,8,9]                                
-                    //         },
-                    //         {
-                    //             label: 'sadness',
-                    //             data: [1,2,3,4,5,6,7,8,9],
-                    //             backgroundColor: [
-                    //                 'rgba(0,0,255,0.2)'
-                    //             ],
-                    //             borderColor: [
-                    //                 'rgba(0,0,255,1)'
-                    //             ],
-                    //             borderWidth: 1
-                    //         }]
-                    //     },
-                    //     options: {
-                    //         scales: {
-                    //             yAxes: [{
-                    //                 ticks: {
-                    //                     beginAtZero: true
-                    //                 }
-                    //             }],
-                    //             height: 600,
-                    //             width: 800
-                    //         },
-                    //         maintainAspectRatio: false
-                    //     }
-                    // });
                 }
             });
         });

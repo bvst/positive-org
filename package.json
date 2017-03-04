@@ -1,10 +1,9 @@
 {
   "name": "positive-org",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "lite-server"
   },
   "repository": {
     "type": "git",
@@ -16,5 +15,15 @@
   "bugs": {
     "url": "https://github.com/bvst/positive-org/issues"
   },
-  "homepage": "https://github.com/bvst/positive-org#readme"
+  "homepage": "https://github.com/bvst/positive-org#readme",
+  "description": "",
+  "dependencies": {
+    "chart.js": "^2.5.0",
+    "jquery": "^3.1.1",
+    "vue": "^2.2.1"
+  },
+  "devDependencies": {
+    "lite-server": "^2.2.2",
+    "typings": "^2.1.0"
+  }
 }

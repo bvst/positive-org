@@ -1,10 +1,21 @@
 var GLOBAL_OBJECT = {};
 
 $(function () {
-    var extractToken = function (hash) {
-        var match = hash.match(/access_token=([\w-]+)/);
-        return !!match && match[1];
-    };
+
+    // function readTextFile() {
+    //     var file = "file:///C:/Projects/positive-org/token.txt";
+    //     var rawFile = new XMLHttpRequest();
+    //     rawFile.open("GET", file, false);
+    //     rawFile.onreadystatechange = function () {
+    //         if (rawFile.readyState === 4) {
+    //             if (rawFile.status === 200 || rawFile.status == 0) {
+    //                 var allText = rawFile.responseText;
+    //                 alert(allText);
+    //             }
+    //         }
+    //     }
+    //     rawFile.send(null);
+    // }
 
     var CLIENT_ID = "2793421325.149799815397";
     var CLIENT_CODE = "2793421325.150395679590.a590187d8d";
@@ -19,97 +30,15 @@ $(function () {
     var SAD_STRING = ["confused", "kjedelig", "fy faen", "fy flate", "disappointed"]
     var SAD_COUNT = 0;
     var SAD_PERCENTAGE = 0;
-
     var TOTAL_RESPONSES = 0;
 
-    var token = "xoxp-2793421325-2793421327-149749102948-aa16560aa6facdc170f379a43cf84548"; // extractToken(document.location.hash);
-    $('div.authenticated').show();
-
-    $('span.token').text(token);
-
-    $.get(HISTORY_ENDPOINT, {
-        token: token,
-        channel: 'C02PBCD9V',
-        count: 1000
-    }, function (data) {
-        console.log(data);
-        console.log(data.messages.length);
-        var happy = data.messages.forEach(function (message) {
-            if (message.text && HAPPY_STRING.some(function (v) { return message.text.toLocaleLowerCase().indexOf(v) >= 0; })) {
-                HAPPY_COUNT++;
-            }
-            if (message.text && SAD_STRING.some(function (v) { return message.text.toLocaleLowerCase().indexOf(v) >= 0; })) {
-                SAD_COUNT++;
-            }
-            TOTAL_RESPONSES = HAPPY_COUNT + SAD_COUNT;
-
-            // console.log(HAPPY_COUNT);
-            // console.log(SAD_COUNT);
-        }, this);
-        HAPPY_PERCENTAGE = (100 / TOTAL_RESPONSES) * HAPPY_COUNT;
-        SAD_PERCENTAGE = (100 / TOTAL_RESPONSES) * SAD_COUNT;
-        // console.log('HAPPY: ' + HAPPY_PERCENTAGE);
-        // console.log(SAD_PERCENTAGE);
-        // console.log(TOTAL_RESPONSES);
-
-        var slackMessages = new Vue({
-            el: '#slackMessages',
-            data: {
-                happy: HAPPY_PERCENTAGE,
-                sad: SAD_PERCENTAGE,
-                total: TOTAL_RESPONSES
-            }
-        });
-
-        var ctx = document.getElementById("myChart");
-        var myChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ["random", "blah"],
-                datasets: [{
-                    label: 'happyness',
-                    data: [HAPPY_PERCENTAGE],
-                    backgroundColor: [
-                        'rgba(255, 99, 132, 0.2)',
-                    ],
-                    borderColor: [
-                        'rgba(255,99,132,1)'
-                    ],
-                    borderWidth: 1
-                },
-                {
-                    label: 'sadness',
-                    data: [SAD_PERCENTAGE],
-                    backgroundColor: [
-                        'rgba(0,0,255,0.2)'
-                    ],
-                    borderColor: [
-                        'rgba(0,0,255,1)'
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                scales: {
-                    yAxes: [{
-                        ticks: {
-                            beginAtZero: true
-                        }
-                    }],
-                    height: 600,
-                    width: 800
-                },
-                maintainAspectRatio: false
-            }
-        });
-    });
-
+    var token = "xoxp-2793421325-2793421327-149067564641-334047ecf2d5a34733eee63e7d472e68"; // extractToken(document.location.hash);
+    var itemsProcessed = 0;
     $.get(CHANNEL_LIST_ENDPOINT, {
         token: token,
         exclude_archived: true
-    }).done(slackStuff);
-
-    function slackStuff(slackChannelObject) {
+    }).done(function (slackChannelObject) {
+        // console.log(slackChannelObject);
         GLOBAL_OBJECT = {
             channels: []
         };
@@ -119,7 +48,8 @@ $(function () {
                 channel: channel.id,
                 count: 1000
             }).done(function (data) {
-                if (data.messages) {
+                itemsProcessed++;
+                if (data.messages && data.messages.length > 0) {
                     var happy_counter = 0;
                     var happy_percentage_local = 0;
                     var sad_counter = 0;
@@ -134,16 +64,108 @@ $(function () {
                         }
                         total_response = happy_counter + sad_counter;
                     }, this);
-                    happy_percentage_local = (100 / total_response) * happy_counter;
-                    sad_percentage_local = (100 / total_response) * sad_counter;
-                    GLOBAL_OBJECT.channels.push({
-                        channel: channel.name,
-                        messages: data.messages,
-                        happy: happy_percentage_local,
-                        sad: sad_percentage_local
+                    if (happy_counter || sad_counter) {
+                        happy_percentage_local = (100 / total_response) * happy_counter;
+                        sad_percentage_local = (100 / total_response) * sad_counter;
+                        GLOBAL_OBJECT.channels.push({
+                            name: channel.name,
+                            messages: data.messages,
+                            happy: happy_percentage_local,
+                            sad: sad_percentage_local,
+                            amount: happy_counter + sad_counter
+                        });
+                    }
+                }
+                if (itemsProcessed === channels.length) {
+                    var happyArray = [];
+                    var sadArray = [];
+                    var labels = [];
+                    var amountArray = [];
+                    GLOBAL_OBJECT.channels.forEach(function (channel) {
+                        happyArray.push(channel.happy ? channel.happy : 0);
+                        sadArray.push(channel.sad ? channel.sad : 0);
+                        labels.push(channel.name);
+                        amountArray.push(channel.amount);
+                    }, this);
+                    var ctx = document.getElementById("myChart");
+                    var myChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Antall positive/triste meldinger',
+                                backgroundColor: 'rgba(0, 255, 0, 1)',
+                                borderWidth: 1,
+                                data: amountArray
+                            },
+                            {
+                                label: 'Glad i %',
+                                backgroundColor: 'rgba(54, 162, 235, 1)',
+                                borderWidth: 1,
+                                data: happyArray
+
+                            }, {
+                                label: 'Trist i %',
+                                backgroundColor: 'rgba(255, 99, 132, 1)',
+                                borderWidth: 1,
+                                data: sadArray
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                yAxes: [{
+                                    ticks: {
+                                        beginAtZero: true
+                                    }
+                                }]
+                            },
+                            maintainAspectRatio: false
+                        }
                     });
+                    // var myChart = new Chart(ctx, {
+                    //     type: 'bar',
+                    //     data: {
+                    //         labels: labels,
+                    //         datasets: [{
+                    //             label: 'happyness',
+                    //             backgroundColor: [
+                    //                 'rgba(255, 99, 132, 0.2)',
+                    //             ],
+                    //             borderColor: [
+                    //                 'rgba(255,99,132,1)'
+                    //             ],
+                    //             borderWidth: 1,
+                    //             data: [1,2,3,4,5,6,7,8,9]                                
+                    //         },
+                    //         {
+                    //             label: 'sadness',
+                    //             data: [1,2,3,4,5,6,7,8,9],
+                    //             backgroundColor: [
+                    //                 'rgba(0,0,255,0.2)'
+                    //             ],
+                    //             borderColor: [
+                    //                 'rgba(0,0,255,1)'
+                    //             ],
+                    //             borderWidth: 1
+                    //         }]
+                    //     },
+                    //     options: {
+                    //         scales: {
+                    //             yAxes: [{
+                    //                 ticks: {
+                    //                     beginAtZero: true
+                    //                 }
+                    //             }],
+                    //             height: 600,
+                    //             width: 800
+                    //         },
+                    //         maintainAspectRatio: false
+                    //     }
+                    // });
                 }
             });
         });
-    }
+    });
+
+
 });
